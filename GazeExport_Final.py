@@ -52,39 +52,47 @@ def gazeExport(data, CSV_out):
         
         ####
         
+        "Adj_L_to_L": [],
         "Adj_L_to_R": [],
         "Adj_L_to_NaN": [],
         "Adj_L_to_Neither": [],
         
         "Adj_R_to_L": [],
+        "Adj_R_to_R": [],
         "Adj_R_to_NaN": [],
         "Adj_R_to_Neither": [],
         
         "Adj_NaN_to_L": [],
         "Adj_NaN_to_R": [],
+        "Adj_NaN_to_NaN": [],
         "Adj_NaN_to_Neither": [],
         
         "Adj_Neither_to_L": [],
         "Adj_Neither_to_R": [],
         "Adj_Neither_to_NaN": [],
+        "Adj_Neither_to_Neither": [],
         
         ####
         
+        "Nei_L_to_L": [],
         "Nei_L_to_R": [],
         "Nei_L_to_NaN": [],
         "Nei_L_to_Neither": [],
         
         "Nei_R_to_L": [],
+        "Nei_R_to_R": [],
         "Nei_R_to_NaN": [],
         "Nei_R_to_Neither": [],
         
         "Nei_NaN_to_L": [],
         "Nei_NaN_to_R": [],
+        "Nei_NaN_to_NaN": [],
         "Nei_NaN_to_Neither": [],
         
         "Nei_Neither_to_L": [],
         "Nei_Neither_to_R": [],
         "Nei_Neither_to_NaN": [],
+        "Nei_Neither_to_Neither": [],
         
         "Participant_NaN_Ratio": [],
         "Trial_NaN_Ratio": []
@@ -154,38 +162,46 @@ def gazeExport(data, CSV_out):
             out_template["Neither_to_Neither"].append(data[participant]["Markov"][trial]["Neither"]["Neither"][0])
             
             
+            out_template["Adj_L_to_L"].append(data[participant]["Adj_Markov"][trial]["Left"]["Left"][0])
             out_template["Adj_L_to_R"].append(data[participant]["Adj_Markov"][trial]["Left"]["Right"][0])
             out_template["Adj_L_to_NaN"].append(data[participant]["Adj_Markov"][trial]["Left"]["NaN"][0])
             out_template["Adj_L_to_Neither"].append(data[participant]["Adj_Markov"][trial]["Left"]["Neither"][0])
             
             out_template["Adj_R_to_L"].append(data[participant]["Adj_Markov"][trial]["Right"]["Left"][0])
+            out_template["Adj_R_to_R"].append(data[participant]["Adj_Markov"][trial]["Right"]["Right"][0])
             out_template["Adj_R_to_NaN"].append(data[participant]["Adj_Markov"][trial]["Right"]["NaN"][0])
             out_template["Adj_R_to_Neither"].append(data[participant]["Adj_Markov"][trial]["Right"]["Neither"][0])
             
             out_template["Adj_NaN_to_L"].append(data[participant]["Adj_Markov"][trial]["NaN"]["Left"][0])
             out_template["Adj_NaN_to_R"].append(data[participant]["Adj_Markov"][trial]["NaN"]["Right"][0])
+            out_template["Adj_NaN_to_NaN"].append(data[participant]["Adj_Markov"][trial]["NaN"]["NaN"][0])
             out_template["Adj_NaN_to_Neither"].append(data[participant]["Adj_Markov"][trial]["NaN"]["Neither"][0])
             
             out_template["Adj_Neither_to_L"].append(data[participant]["Adj_Markov"][trial]["Neither"]["Left"][0])
             out_template["Adj_Neither_to_R"].append(data[participant]["Adj_Markov"][trial]["Neither"]["Right"][0])
             out_template["Adj_Neither_to_NaN"].append(data[participant]["Adj_Markov"][trial]["Neither"]["NaN"][0])
+            out_template["Adj_Neither_to_Neither"].append(data[participant]["Adj_Markov"][trial]["Neither"]["Neither"][0])
             
             
+            out_template["Nei_L_to_L"].append(data[participant]["Nei_Markov"][trial]["Left"]["Left"][0])
             out_template["Nei_L_to_R"].append(data[participant]["Nei_Markov"][trial]["Left"]["Right"][0])
             out_template["Nei_L_to_NaN"].append(data[participant]["Nei_Markov"][trial]["Left"]["NaN"][0])
             out_template["Nei_L_to_Neither"].append(data[participant]["Nei_Markov"][trial]["Left"]["Neither"][0])
             
             out_template["Nei_R_to_L"].append(data[participant]["Nei_Markov"][trial]["Right"]["Left"][0])
+            out_template["Nei_R_to_R"].append(data[participant]["Nei_Markov"][trial]["Right"]["Right"][0])
             out_template["Nei_R_to_NaN"].append(data[participant]["Nei_Markov"][trial]["Right"]["NaN"][0])
             out_template["Nei_R_to_Neither"].append(data[participant]["Nei_Markov"][trial]["Right"]["Neither"][0])
             
             out_template["Nei_NaN_to_L"].append(data[participant]["Nei_Markov"][trial]["NaN"]["Left"][0])
             out_template["Nei_NaN_to_R"].append(data[participant]["Nei_Markov"][trial]["NaN"]["Right"][0])
+            out_template["Nei_NaN_to_NaN"].append(data[participant]["Nei_Markov"][trial]["NaN"]["NaN"][0])
             out_template["Nei_NaN_to_Neither"].append(data[participant]["Nei_Markov"][trial]["NaN"]["Neither"][0])
             
             out_template["Nei_Neither_to_L"].append(data[participant]["Nei_Markov"][trial]["Neither"]["Left"][0])
             out_template["Nei_Neither_to_R"].append(data[participant]["Nei_Markov"][trial]["Neither"]["Right"][0])
             out_template["Nei_Neither_to_NaN"].append(data[participant]["Nei_Markov"][trial]["Neither"]["NaN"][0])
+            out_template["Nei_Neither_to_Neither"].append(data[participant]["Nei_Markov"][trial]["Neither"]["Neither"][0])
             
             out_template["Participant_NaN_Ratio"].append(data[participant]["ParticipantError"])
             out_template["Trial_NaN_Ratio"].append(data[participant]["TrialError"][trial])
