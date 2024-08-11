@@ -8,6 +8,22 @@ import json
 
 
 def GazeAOI(data_folder, timestamp_folder, results_folder, JSON_out = f"{datetime.now().date()}.json", CSV_out = f"{datetime.now().date()}.csv", neither_cutoff = 100):
+    """
+    Aggregates the process of checking the data, processing it, analyzing it, and then exporting it.
+    
+    Parameters
+    ----------
+    data_folder : Folder path containing EyeMotions data.
+    timestamp_folder : Folder path containing the response files.
+    results_folder : Folder path where you would like the results (CSV, JSONs, errs).
+    JSON_out : output path for data in a JSON format.  The default is f"{datetime.now().date()}.json".
+    CSV_out : output path for data in a CSV format.  The default is f"{datetime.now().date()}.csv".
+    neither_cutoff : the maximum time spent looking at Neither between Ls or Rs to be considered a "transition" Neither. The default is 100.
+
+    Returns
+    -------
+    dictionary : Same as the dictionary exported via JSON_out
+    """
     dictionary = {}
     errs = []
     

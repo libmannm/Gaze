@@ -2,6 +2,14 @@ import pandas as pd
 import numpy as np
 
 def gazeExport(data, CSV_out):
+    """
+    Converts all of the relevant JSON data to a CSV format for subsequent analysis via transcribing the data to a simplified dictionary -> dataframe
+
+    Parameters
+    ----------
+    data : A dictionary containing all of the outlined data (as per EyeMotionsIntake_Final.py)
+    CSV_out : The name of the file where the data should be written to
+    """
     participants = list(data.keys())
     #COLUMNS
     out_template = {

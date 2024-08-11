@@ -93,7 +93,7 @@ class Intake():
         times_sheet = times_sheet[times_sheet[:,0]*0 == 0]
         times_sheet = times_sheet[times_sheet[:,1]*0 == 0]
         
-        if self.data[-1,1] > times_sheet[-1,2]*1000:
+        if self.data[-1,1] > times_sheet[-1,2]*1000:  #It is possible for the tracker to stop recording before the end of a trial, these participants are thrown out
             self.check_err = True
             for row in times_sheet:
                 trial_name = self.IDs[str(int(row[0]))]
@@ -107,13 +107,13 @@ class Intake():
                 self.trial_list.append(str(int(i)))
             overlap = self.find_times()  #Finds the indices of each start and end time
             
-            if len(overlap) > 0:
+            if len(overlap) > 0:  #Overlapping trials are actually removed as part of the self.find_times() function, but are recorded here for user notice
                 self.err_list.append(f"{ID} - Overlapping trials ({len(overlap)}):")
                 print(f"{ID} contains overlapping trials, continuing with all non overlapping trials")
                 for over in overlap:
                     self.err_list.append(f"    - {ID}: {over}")
             
-            self.outDict = {ID:{}}
+            self.outDict = {ID:{}}  #Since the data is stored as nested dictionaries, the overall categories need to be instantiated before use
             self.outDict[ID]["Timeline"] = {}
             self.outDict[ID]["Raw_Timeline"] = {}
             self.outDict[ID]["LastLook"] = {}
@@ -132,27 +132,26 @@ class Intake():
             for z,trial in enumerate(self.times):
                 self.outDict[ID]["Ratios"][trial] = {}
     
-                
-                self.outDict[ID]["Time_Total"][trial] = (self.times[trial]["end"]-self.times[trial]["start"])*1000
+                self.outDict[ID]["Time_Total"][trial] = (self.times[trial]["end"]-self.times[trial]["start"])*1000  #Probably redundant
                 self.outDict[ID]["Ratios"][trial]["Total"] = (self.times[trial]["end"]-self.times[trial]["start"])*1000
                 
-                lookAOI = np.zeros([self.times[trial]["end_i"]-self.times[trial]["start_i"],3])
+                lookAOI = np.zeros([self.times[trial]["end_i"]-self.times[trial]["start_i"],3])  #Very important temporary array that stores the raw gaze location, the interpolated gaze location, and the time
                 
                 with np.nditer(self.data[self.times[trial]["start_i"]:self.times[trial]["end_i"],:], flags=['external_loop', 'refs_ok'], order='C') as it:
                     for i,row in enumerate(it):
-                        lookAOI[i,0] = self.classify(row[2],row[3])
+                        lookAOI[i,0] = self.classify(row[2],row[3])  #Turns coordinates into the AOIs being looked at: Left, Right, Neither, or NaN (Error)
                         self.times[trial]["NaNIndices"] = np.where(lookAOI[:,0] == -1)[0]
                         
-                        time_calc = (self.data[int(row[0])+1,1] - self.data[int(row[0])-1,1])/2
+                        time_calc = (self.data[int(row[0])+1,1] - self.data[int(row[0])-1,1])/2  #Times and gaze loc are recorded simultaneously, but we technically want the time spent at each loc
                         lookAOI[i,2] = time_calc
                         
                 
                 lookAOI[:,1] = lookAOI[:,0]
                 
-                self.outDict[ID]["Raw_Timeline"][trial] = lookAOI        
+                self.outDict[ID]["Raw_Timeline"][trial] = lookAOI  #now referenceable throughout the object, gets deleted upon export      
                 
                 NaN_remove_list = []
-                for i,index in enumerate(self.times[trial]["NaNIndices"]):
+                for i,index in enumerate(self.times[trial]["NaNIndices"]):  #Ignore isolated NaNs, technically an extended period of time could suggest a person intentionally looking away from the screen, but that is unlikely in a single 5ms window
                     if i+1 != len(self.times[trial]["NaNIndices"]):
                         if abs(self.times[trial]["NaNIndices"][i+1]-index) != 1 and abs(self.times[trial]["NaNIndices"][i-1]-index) != 1:
                             self.NaN_replace(ID, trial, self.times[trial]["NaNIndices"][i])
@@ -161,26 +160,28 @@ class Intake():
                             self.NaN_replace(ID, trial, self.times[trial]["NaNIndices"][i])
                 self.times[trial]["NaN_remove_list"] = NaN_remove_list
                 
-                self.ratios(ID, trial)
-                times2 = self.timeline(ID, trial)
-                self.looks(ID, trial)
-                self.markov(ID, trial)
-                self.adj_markov(ID, trial, times2)
-                self.nei_markov(ID, trial, times2, neither_cut= neither_cutoff)
+                #Most of the calculations:
+                self.ratios(ID, trial)  #Ratios spent in each AOI per trial plus total trial time
+                times2 = self.timeline(ID, trial)  #returns the list as well as adds it to the dictionary
+                self.looks(ID, trial)  #The first and last places a participant looked during a trial
+                self.markov(ID, trial)  #Data for a Markov Chain
+                self.adj_markov(ID, trial, times2)  #Markov Chain that goes on overall looks not individual timestamps (i.e. a person looking at the Left AOI is treated as one instance rather than multiple)
+                self.nei_markov(ID, trial, times2, neither_cut= neither_cutoff)  #Same as adj but ignoring Neithers under a certain time, could potentially be just transition time as there is space between the Left and Right AOIs
                 
-                self.outDict[ID]["TrialError"][trial] = 1 - (lookAOI[:,0] == -1).sum()/np.shape(lookAOI)[0]
+                self.outDict[ID]["TrialError"][trial] = 1 - (lookAOI[:,0] == -1).sum()/np.shape(lookAOI)[0]  #Ratio of data that is not NaN
                 errArray[z,0] = (lookAOI[:,0] == -1).sum()
                 errArray[z,1] = np.shape(lookAOI)[0]
             
             self.outDict[ID]["ParticipantError"] = 1 - errArray[:,0].sum()/errArray[:,1].sum()
             
-        else:
+        else:  #When a trial is missing data
             self.check_err = False
             print(f"{ID} skipped: missing time")
             self.err_list.append(f"{ID} - Missing Data")
             
         
     def find_times(self):
+        #Iterates through each start and end time (in seconds) and converts it to the indices where those times occur in the EyeMotions Data
         start_search = 0
         errs = []
         prev_trial = ""
@@ -211,6 +212,7 @@ class Intake():
     
     
     def classify(self, x, y):
+        #Change this if your AOIs change
         if x*0!=0 or y*0!=0:
             check = -1
         else:
@@ -233,12 +235,14 @@ class Intake():
             return "NaN"
     
     def NaN_replace(self,ID, trial, index):
+        #Replace the NaN loc with either the loc of the instance immediately before or after it
         try:
             self.outDict[ID]["Raw_Timeline"][trial][index,1] = self.outDict[ID]["Raw_Timeline"][trial][index-1,0]
         except:
             self.outDict[ID]["Raw_Timeline"][trial][index,1] = self.outDict[ID]["Raw_Timeline"][trial][index+1,0]
     
     def ratios(self, ID, trial):
+        #Sums instances of each and then divides by the total number of instances
         self.outDict[ID]["Ratios"][trial]["L"] = [None,None]
         self.outDict[ID]["Ratios"][trial]["R"] = [None,None]
         self.outDict[ID]["Ratios"][trial]["NaN"] = [None,None]
@@ -261,6 +265,7 @@ class Intake():
         self.outDict[ID]["Ratios"][trial]["Neither"][0] = Nei_temp/total_temp
         
     def timeline(self, ID, trial):
+        #Converts each row of LookAOI to a more easily digestible string, combines a series of instances in the same AOI into one instance (i.e. 3 5ms instances at Left -> 15 ms at Left)
         temp_df = self.outDict[ID]["Raw_Timeline"][trial][:,1:]
         temp_code = temp_df[0,0]
         temp_time = temp_df[0,1]
@@ -299,6 +304,7 @@ class Intake():
     
     
     def markov(self, ID, trial):
+        #This and all subsequent Markov calculations work by finding the start and end point of a transition and using them as indices.  These changes are summed up before being divided by the total number of transitions
         self.outDict[ID]["Markov"][trial] = {"Left":{"Left":[0,0], "Right":[0,0], "NaN":[0,0],"Neither":[0,0]},
                                                        "Right":{"Left":[0,0], "Right":[0,0], "NaN":[0,0],"Neither":[0,0]},
                                                        "NaN":{"Left":[0,0], "Right":[0,0], "NaN":[0,0],"Neither":[0,0]},
@@ -317,6 +323,7 @@ class Intake():
                                                                                                                                           self.outDict[ID]["Markov"][trial][a]["Neither"][1]])
     
     def adj_markov(self, ID, trial, times):
+        #Uses the condensed timeline rather than the more extensive LookAOI array
         self.outDict[ID]["Adj_Markov"][trial] = {"Left":{"Left":[0,0], "Right":[0,0], "NaN":[0,0],"Neither":[0,0]},
                                                        "Right":{"Left":[0,0], "Right":[0,0], "NaN":[0,0],"Neither":[0,0]},
                                                        "NaN":{"Left":[0,0], "Right":[0,0], "NaN":[0,0],"Neither":[0,0]},
