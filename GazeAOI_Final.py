@@ -7,7 +7,7 @@ import json
 
 
 
-def GazeAOI(data_folder, timestamp_folder, results_folder, JSON_out = f"{datetime.now().date()}.json", CSV_out = f"{datetime.now().date()}.csv", neither_cutoff = 100):
+def GazeAOI(data_folder, timestamp_folder, results_folder, JSON_out = f"{datetime.now().date()}.json", CSV_out = f"{datetime.now().date()}.csv", error_out = f"Errors_{datetime.now().date()}.csv", neither_cutoff = 100):
     """
     Aggregates the process of checking the data, processing it, analyzing it, and then exporting it.
     
@@ -41,7 +41,7 @@ def GazeAOI(data_folder, timestamp_folder, results_folder, JSON_out = f"{datetim
     out_file = open(results_folder + JSON_out, "w")
     json.dump(dictionary, out_file, indent = 4)
     
-    with open(f"{results_folder}{datetime.now().date()}_errors.txt", "w") as file:
+    with open(results_folder + error_out, "w") as file:
         for item in errs:
             file.write(item + "\n")
             
